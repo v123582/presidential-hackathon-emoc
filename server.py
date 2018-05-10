@@ -161,10 +161,36 @@ def delete_epcr(epcr_id):
 
 
 
+# 位置打卡相關 API: 位置打卡
+@app.route('/positions/', methods=["POST"])
+def post_positions():
+	data = request.get_json()
 
+	if {'device_id', 'timestamp', 'latlng', 'ePCR_id'} - set(data.keys()):
+		return bad_request(message='Bad Request for positions')
 
+	db["positions"].insert_one(data)
 
-   
+	message = {
+	   'result': "success",
+	}
+	resp = jsonify(message)
+	resp.status_code = 200
+	return resp
+
+# 位置打卡相關 API: 讀取位置
+@app.route('/positions/', methods=["GET"])
+def get_positions():
+	data = request.values.to_dict()
+	projection = {"_id":0}
+	result_ = list(db["positions"].find(data, projection))
+	status = {
+		'total_count': len(result_)
+	}
+	resp = jsonify(dict(result=result_, status=status))
+	resp.status_code = 200
+	return resp
+
 @app.errorhandler(400)
 def bad_request_kamera(error=None):
 	message = {
@@ -176,8 +202,6 @@ def bad_request_kamera(error=None):
 
 	return resp
 
-
-
 @app.errorhandler(400)
 def bad_request_epcr(error=None):
 	message = {
@@ -187,6 +211,12 @@ def bad_request_epcr(error=None):
 	resp = jsonify(message)
 	resp.status_code = 400
 
+	return resp
+
+@app.errorhandler(400)
+def bad_request(error=None, message=""):
+	resp = jsonify(message)
+	resp.status_code = 400
 	return resp
 
 
