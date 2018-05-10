@@ -191,6 +191,91 @@ def get_positions():
 	resp.status_code = 200
 	return resp
 
+
+# 送往醫院預佔相關 API: 預約
+@app.route('/reservations/', methods=["POST"])
+def post_reservations():
+	data = request.get_json()
+
+	if {'device_id', 'ePCR_id', 'destination'} - set(data.keys()):
+		return bad_request(message='Bad Request for reservations')
+
+	r = {
+		"device_id": data.get('device_id', None),
+		"ePCR_id": data.get('ePCR_id', None),
+		"gender": data.get('gender', None),
+		"age_range":  data.get('age_range', None),
+		"is_ALS":  data.get('is_ALS', None),
+		"special_need":  data.get('special_need', []),
+		"destination":  data.get('destination', None),
+	}
+
+	db["reservations"].insert_one(data)
+
+	message = {
+	   'result': "success",
+	}
+	resp = jsonify(message)
+	resp.status_code = 200
+	return resp
+
+# 送往醫院預佔相關 API: 查詢
+@app.route('/reservations/', methods=["GET"])
+def get_reservations():
+	data = request.values.to_dict()
+	projection = {"_id":0}
+	result_ = list(db["reservations"].find(data, projection))
+	status = {
+		'total_count': len(result_)
+	}
+	resp = jsonify(dict(result=result_, status=status))
+	resp.status_code = 200
+	return resp
+
+
+# 裝置相關 API: 查詢
+@app.route('/devices/', methods=["GET"])
+def get_devices():
+	data = request.values.to_dict()
+	projection = {"_id":0}
+	result_ = list(db["devices"].find(data, projection))
+	status = {
+		'total_count': len(result_)
+	}
+	resp = jsonify(dict(result=result_, status=status))
+	resp.status_code = 200
+	return resp
+
+# 裝置相關 API: 新增
+@app.route('/devices/', methods=["POST"])
+def post_devices():
+	data = request.get_json()
+	if {'device_id', 'device_name', 'EMSUnit'} - set(data.keys()):
+		return bad_request(message='Bad Request for devices')
+
+	db["devices"].insert_one(data)
+
+	message = {
+	   'result': "success",
+	   'device_id': data['device_id'],
+	}
+	resp = jsonify(message)
+	resp.status_code = 200
+	return resp
+
+# 裝置相關 API: 移除
+@app.route('/devices/<device_id>', methods=["DELETE"])
+def delete_devices(device_id):
+
+	db["devices"].remove({'device_id': device_id})
+
+	message = {
+	   'result': "success",
+	}
+	resp = jsonify(message)
+	resp.status_code = 200
+	return resp
+
 @app.errorhandler(400)
 def bad_request_kamera(error=None):
 	message = {
