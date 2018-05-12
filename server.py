@@ -22,45 +22,46 @@ db = client[config.credentials['database']]
 
 
 
-
+# given某時間點、位置，回傳"某時間點"之前，離"位置"最近之十家醫院的分別的最新Kamera資料
 @app.route('/KAMERA/')
 def get_kamera():
 
 	ambulance_latlng = request.args.get('latlng', default = 1, type = str)
 	timestamp = request.args.get('timestamp', default = 1, type = str)
+	url = "http://maps.googleapis.com/maps/api/distancematrix/json?origins={0}&destinations={1}&mode=driving&language=en-EN&sensor=false"
+
+
+	def get_10_hospital_nearby():
+		query = {"updated_timestamp":{'$lte':timestamp }}
+		projection = {"hospital_name": 1, "hospital_latlng":1}
+		df = pd.DataFrame(list(db["kamera"].find(query, projection)))
+		df = df.drop_duplicates(["hospital_name"])
+		df["traveling_time"] = df["hospital_latlng"].apply(lambda x: simplejson.load(urllib.request.urlopen(url.format(ambulance_latlng,x)))['rows'][0]['elements'][0]['duration']['value'])
+		hospital_nearby = df.sort_values("traveling_time" , ascending=True )[:10]
+		return list(hospital_nearby["hospital_name"])
+
 
 	if not ambulance_latlng:
 		return(bad_request_kamera())
 
 	else:
-		df = pd.DataFrame(list(db["kamera"].find({"updated_timestamp":timestamp})))
-
-
 		g = []
-		orig_coord = ambulance_latlng
-		for i in list(df["hospital_latlng"]):
-			dest_coord = i
-			url = "http://maps.googleapis.com/maps/api/distancematrix/json?origins={0}&destinations={1}&mode=driving&language=en-EN&sensor=false".format(str(orig_coord),str(dest_coord))
-			result= simplejson.load(urllib.request.urlopen(url))
-			driving_time = result['rows'][0]['elements'][0]['duration']['value']
-			g.append(driving_time)
+		for i in get_10_hospital_nearby():
+			query = {
+				"updated_timestamp":{'$lte':timestamp }, 
+				"hospital_name": {'$in': [i]}
+			}
+			projection = {"_id": 0}
+			temp = pd.DataFrame(list(db["kamera"].find(query, projection).sort("updated_timestamp",-1).limit(1)))
+			g.append(temp)
+		
+		final = pd.concat(g)
 
-		df["traveling_time"] = g
-		hospital_nearby = df.sort_values("traveling_time" , ascending=True )[:10]
-		del hospital_nearby["_id"]
-
-		response = jsonify(dict(result=hospital_nearby.to_json( orient="records" )))
+		response = jsonify(dict(result=final.to_json( orient="records" )))
 		response.status_code = 200
 
 
 		return response
-
-
-
-
-
-
-
 
 
 
@@ -83,11 +84,7 @@ def post_epcr():
 		return forbidden_epcr()
 
 	else:
-		# 塞入 DB
-		print("hihihihi")
 		db["epcr"].insert_one(test_json)
-
-
 		message = {
 			'result': "success",
 		}
