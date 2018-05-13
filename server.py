@@ -205,6 +205,7 @@ def post_reservations():
 		"is_ALS":  data.get('is_ALS', None),
 		"special_need":  data.get('special_need', []),
 		"destination":  data.get('destination', None),
+		"is_active": True,
 	}
 
 	db["reservations"].insert_one(data)
