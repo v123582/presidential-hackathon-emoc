@@ -208,7 +208,7 @@ def post_reservations():
 		"is_active": True,
 	}
 
-	db["reservations"].insert_one(data)
+	db["reservations"].insert_one(r)
 
 	message = {
 	   'result': "success",
