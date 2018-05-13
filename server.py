@@ -28,10 +28,11 @@ def get_kamera():
 
 	ambulance_latlng = request.args.get('latlng', default = 1, type = str)
 	timestamp = request.args.get('timestamp', default = 1, type = str)
-	url = "http://maps.googleapis.com/maps/api/distancematrix/json?origins={0}&destinations={1}&mode=driving&language=en-EN&sensor=false"
+	# url = "http://maps.googleapis.com/maps/api/distancematrix/json?origins={0}&destinations={1}&mode=driving&language=en-EN&sensor=false"
 
 
-	def get_10_hospital_nearby():
+	# calculate traveling time with google api 
+	def get_10_hospital_nearby_v1():
 		query = {"updated_timestamp":{'$lte':timestamp }}
 		projection = {"hospital_name": 1, "hospital_latlng":1}
 		df = pd.DataFrame(list(db["kamera"].find(query, projection)))
@@ -41,12 +42,32 @@ def get_kamera():
 		return list(hospital_nearby["hospital_name"])
 
 
+	# calculate distance using formula
+
+	def calculate_distance(destination):
+		a = (float(destination.split(",")[0])-float(ambulance_latlng.split(",")[0]))**2
+		b = (float(destination.split(",")[1])-float(ambulance_latlng.split(",")[1]))**2
+		return (a+b)
+
+	def get_10_hospital_nearby_v2():
+		query = {"updated_timestamp":{'$lte':timestamp }}
+		projection = {"hospital_name": 1, "hospital_latlng":1}
+		df = pd.DataFrame(list(db["kamera"].find(query, projection)))
+		df = df.drop_duplicates(["hospital_name"])
+		df["distance"] = df["hospital_latlng"].apply(calculate_distance)
+		hospital_nearby = df.sort_values("distance" , ascending=True )[:10]
+		return list(hospital_nearby["hospital_name"])
+
+
+
+
+
 	if not ambulance_latlng:
 		return(bad_request_kamera())
 
 	else:
 		g = []
-		for i in get_10_hospital_nearby():
+		for i in get_10_hospital_nearby_v2():
 			query = {
 				"updated_timestamp":{'$lte':timestamp }, 
 				"hospital_name": {'$in': [i]}
