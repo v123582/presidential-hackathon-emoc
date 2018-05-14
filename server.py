@@ -241,19 +241,21 @@ def post_reservations():
 # 送往醫院預佔相關 API: 查詢
 @app.route('/reservations/', methods=["GET"])
 def get_reservations():
+	arrived_epcrs = [ epcr['ePCR_id'] for epcr in db["epcr"].find( { 'arrive_hospital_timestamp': { '$nin': ['', None] } } ) ]
+	
 	data = request.values.to_dict()
 	projection = {"_id":0}
-	if 'is_active' in data:
-		data['is_active'] = bool(data['is_active'])
+	r = {}
 
-	reservations = db["reservations"].find(data)
-	for reservation in list(reservations):
-		ePCR = db["epcr"].find_one({'ePCR_id': reservation['ePCR_id']})
-		if ePCR.get('arrive_hospital_timestamp', False):
-			reservation['is_active'] = False
-			db["reservations"].save(reservation)
+	if 'destination' in data:
+		r['destination'] = data['destination']
 
-	result_ = list(db["reservations"].find(data, projection))
+	if 'is_active' in data and data['is_active'] in ['1', 'true', 'True']:
+		r['ePCR_id'] = { '$nin': arrived_epcrs }
+
+	result_ = list(db["reservations"].find(r, projection))
+
+
 	status = {
 		'total_count': len(result_)
 	}
