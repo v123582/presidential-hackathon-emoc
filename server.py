@@ -23,8 +23,8 @@ db = client[config.credentials['database']]
 
 
 # given某時間點、位置，回傳"某時間點"之前，離"位置"最近之十家醫院的分別的最新Kamera資料
-@app.route('/KAMERA/')
-def get_kamera():
+@app.route('/KAMERA_OLD/')
+def get_kamera_old():
 
 	ambulance_latlng = request.args.get('latlng', default = 1, type = str)
 	timestamp = request.args.get('timestamp', default = 1, type = str)
@@ -86,7 +86,41 @@ def get_kamera():
 
 
 
+@app.route('/KAMERA/')
+def get_kamera():
 
+	ambulance_latlng = request.args.get('latlng', default = 1, type = str)
+	timestamp = request.args.get('timestamp', default = 1, type = str)
+	latitude, longitude = map(lambda x: float(x), ambulance_latlng.split(","))
+	
+	hospitals = db["kamera"].aggregate( 
+        [
+            { "$group": {  
+                '_id': "$hospital_name",
+                'hospital_name': { "$first": "$hospital_name" },
+                'hospital_latlng': { "$first": "$hospital_latlng" }
+            }}
+        ]
+    )
+	hospitals = pd.DataFrame(list(hospitals))
+	hospitals['distance'] = hospitals['hospital_latlng'].map(lambda x: ((float(x.split(',')[0])-latitude)**2 + (float(x.split(',')[1])-longitude)**2)**0.5)
+	hospitals = hospitals.sort_values('distance')[:10]
+
+	kameras = (db["kamera"].find({
+		"updated_timestamp":{'$lte': timestamp }, 
+		"hospital_name": {'$in': list(hospitals['hospital_name'])}
+	}).sort("updated_timestamp", -1))
+	kameras = pd.DataFrame(list(kameras))
+
+	result_ = pd.merge(hospitals, kameras, on=['hospital_name'], how='left').drop_duplicates(["hospital_name"]).drop(['_id_y', '_id_x'], axis=1)
+	result_ = result_.to_dict(orient='records')
+
+	status = {
+		'total_count': len(result_)
+	}
+	resp = jsonify(dict(result=result_, status=status))
+	resp.status_code = 200
+	return resp
 
 
 @app.route('/ePCR/', methods=["POST"])
