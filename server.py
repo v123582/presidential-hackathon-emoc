@@ -175,9 +175,17 @@ def delete_epcr(epcr_id):
 		resp.status_code = 200
 		return resp
 
-
-
-
+@app.route('/ePCR/', methods=["GET"])
+def get_epcrs():
+	data = request.values.to_dict()
+	projection = {"_id":0}
+	result_ = list(db["epcr"].find(data, projection))
+	status = {
+		'total_count': len(result_)
+	}
+	resp = jsonify(dict(result=result_, status=status))
+	resp.status_code = 200
+	return resp
 
 # 位置打卡相關 API: 位置打卡
 @app.route('/positions/', methods=["POST"])
