@@ -242,7 +242,16 @@ def post_reservations():
 @app.route('/reservations/', methods=["GET"])
 def get_reservations():
 	data = request.values.to_dict()
+	reservations = db["reservations"].find(data)
+	for reservation in list(reservations):
+		ePCR = db["epcr"].find_one({'ePCR_id': reservation['ePCR_id']})
+		if ePCR.get('arrive_hospital_timestamp', False):
+			reservation['is_active'] = False
+			db["reservations"].save(reservation)
+
 	projection = {"_id":0}
+	if 'is_active' in data:
+		data['is_active'] = bool(data['is_active'])
 	result_ = list(db["reservations"].find(data, projection))
 	status = {
 		'total_count': len(result_)
