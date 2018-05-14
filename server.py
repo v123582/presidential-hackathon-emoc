@@ -8,7 +8,7 @@ import pymongo
 import simplejson
 import urllib
 import config
-
+import datetime
 
 app = Flask(__name__)
 # CORS(app)
@@ -89,8 +89,11 @@ def get_kamera_old():
 @app.route('/KAMERA/')
 def get_kamera():
 
-	ambulance_latlng = request.args.get('latlng', default = 1, type = str)
-	timestamp = request.args.get('timestamp', default = 1, type = str)
+	ambulance_latlng = request.args.get('latlng')
+	if not ambulance_latlng:
+		return(bad_request_kamera())
+
+	timestamp = request.args.get('timestamp', datetime.datetime.now().isoformat().replace('-', '').replace(':', '').split('.')[0]+'Z')
 	latitude, longitude = map(lambda x: float(x), ambulance_latlng.split(","))
 	
 	hospitals = db["kamera"].aggregate( 
