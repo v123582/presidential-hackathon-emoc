@@ -6,6 +6,9 @@
 
 ![](https://i.imgur.com/dOMEhqC.png)
 
+[![Demo](http://img.youtube.com/vi/FRKr6vZXpWk/0.jpg)](https://www.youtube.com/watch?v=FRKr6vZXpWk)
+
+
 # source code 
 
 https://github.com/v123582/presidential-hackathon-emoc
