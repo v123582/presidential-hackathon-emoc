@@ -4,7 +4,7 @@
 * 不包含：Authentication & Authorization 之實作 (ex: auth token)
 * 不包含：data integrity 之實作 (ex: timestamp-hash)
 
-# source code github
+# source code 
 
 https://github.com/v123582/presidential-hackathon-emoc
 
@@ -723,4 +723,27 @@ response body:
 ## 地理資訊事後回顧
 
 * 出勤中、送醫中每隔15秒紀錄一次上傳 (15萬件/年 * 20分鐘 * 4 * 10byte~) 約莫 3~5 GB 資料
-* 
+
+## License
+
+MIT License
+
+Copyright (c) 2018 WeiYuan, Deniel, Ziv Chang
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
