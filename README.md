@@ -6,9 +6,6 @@
 
 ![](https://i.imgur.com/dOMEhqC.png)
 
-[![Demo](http://img.youtube.com/vi/FRKr6vZXpWk/0.jpg)](https://www.youtube.com/watch?v=FRKr6vZXpWk)
-
-
 # source code 
 
 https://github.com/v123582/presidential-hackathon-emoc
@@ -728,6 +725,11 @@ response body:
 ## 地理資訊事後回顧
 
 * 出勤中、送醫中每隔15秒紀錄一次上傳 (15萬件/年 * 20分鐘 * 4 * 10byte~) 約莫 3~5 GB 資料
+
+## 模擬影片
+
+[![Demo](http://img.youtube.com/vi/FRKr6vZXpWk/0.jpg)](https://www.youtube.com/watch?v=FRKr6vZXpWk)
+
 
 ## License
 
