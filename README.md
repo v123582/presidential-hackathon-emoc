@@ -4,6 +4,8 @@
 * 不包含：Authentication & Authorization 之實作 (ex: auth token)
 * 不包含：data integrity 之實作 (ex: timestamp-hash)
 
+![](https://i.imgur.com/dOMEhqC.png)
+
 # source code 
 
 https://github.com/v123582/presidential-hackathon-emoc
